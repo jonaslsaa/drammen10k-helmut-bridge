@@ -25,7 +25,7 @@ Usage: bun run index.ts [options]
 
 Required:
   --helmut-url <url>       Helmut WordPress splits page URL
-  --race-start <iso>       Race start time in ISO 8601 UTC (e.g. 2026-04-11T12:45:00Z)
+  --race-start <datetime>  Race start time in Oslo time (e.g. 2026-04-11T14:45)
 
 Optional:
   --flowics-url <url>      Flowics HTTP Push endpoint URL
@@ -38,8 +38,8 @@ Optional:
   -h, --help               Show this help
 
 Examples:
-  bun run index.ts --helmut-url "http://splits.hwrun.de/?p=17793" --race-start "2026-04-11T12:45:00Z" --dry-run
-  bun run index.ts --helmut-url "http://splits.hwrun.de/?p=17793" --race-start "2026-04-11T12:45:00Z" --flowics-url "https://..."
+  bun run index.ts --helmut-url "http://splits.hwrun.de/?p=17793" --race-start "2026-04-11T14:45" --dry-run
+  bun run index.ts --helmut-url "http://splits.hwrun.de/?p=17793" --race-start "2026-04-11T14:45" --flowics-url "https://..."
 `);
   process.exit(0);
 }
@@ -54,8 +54,40 @@ const HELMUT_URL = args["helmut-url"] || "";
 const FLOWICS_PUSH_URL = args["flowics-url"] || "";
 const DRY_RUN = args["dry-run"] || false;
 const POLL_INTERVAL_MS = Number(args["poll-interval"]);
-const RACE_START_UTC = args["race-start"] || "";
 const TOTAL_KM = Number(args["total-km"]);
+
+// Convert Oslo time (Europe/Oslo) to UTC
+// Input format: "2026-04-11T14:45" or "2026-04-11T14:45:00"
+function osloToUtc(osloTime: string): Date {
+  // Intl can format a known instant in Oslo; we invert that here.
+  // Append "+02:00" for CEST or "+01:00" for CET based on the date.
+  // Safest: use a formatter round-trip to let the engine figure out the offset.
+  const guess = new Date(osloTime + "Z"); // treat as UTC first
+  const fmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Oslo",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    hour12: false,
+  });
+  // Find what Oslo time that UTC instant maps to, then compute the offset
+  const parts = fmt.formatToParts(guess);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value || "0";
+  const osloOfGuess = new Date(
+    `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}:${get("second")}Z`
+  );
+  const offsetMs = osloOfGuess.getTime() - guess.getTime();
+  // The real UTC time = input oslo time - offset
+  return new Date(new Date(osloTime + "Z").getTime() - offsetMs);
+}
+
+const RACE_START_OSLO = args["race-start"] || "";
+let RACE_START: Date | null = null;
+if (RACE_START_OSLO) {
+  RACE_START = osloToUtc(RACE_START_OSLO);
+  if (isNaN(RACE_START.getTime())) {
+    RACE_START = null;
+  }
+}
 const EVENT_NAME = args["event"] || "Drammen 10K";
 const CATEGORY = args["category"] || "Male Leaders";
 const STATUS_PORT = Number(args["port"]);
@@ -69,8 +101,8 @@ if (FLOWICS_PUSH_URL && !/^https?:\/\//.test(FLOWICS_PUSH_URL))
 if (!DRY_RUN && !FLOWICS_PUSH_URL)
   errors.push("--flowics-url is required (or use --dry-run)");
 
-if (RACE_START_UTC && isNaN(new Date(RACE_START_UTC).getTime()))
-  errors.push("--race-start must be a valid ISO 8601 date");
+if (RACE_START_OSLO && !RACE_START)
+  errors.push("--race-start must be a valid date (e.g. 2026-04-11T14:45)");
 
 if (isNaN(POLL_INTERVAL_MS) || POLL_INTERVAL_MS < 1000)
   errors.push("--poll-interval must be a number >= 1000");
@@ -200,7 +232,7 @@ function parseHelmutHtml(html: string): Split[] {
 // --- Compute full race state ---
 function computeRaceState(splits: Split[]): RaceState {
   const now = new Date();
-  const start = new Date(RACE_START_UTC);
+  const start = RACE_START ?? now;
   const elapsedSecs = (now.getTime() - start.getTime()) / 1000;
 
   const latestSplit = splits.at(-1) ?? null;
@@ -360,7 +392,8 @@ serve({
         config: {
           helmut_url: HELMUT_URL,
           flowics_push_url: DRY_RUN ? "(dry run)" : FLOWICS_PUSH_URL,
-          race_start_utc: RACE_START_UTC,
+          race_start_oslo: RACE_START_OSLO,
+          race_start_utc: RACE_START?.toISOString() ?? "unknown",
           poll_interval_ms: POLL_INTERVAL_MS,
           total_km: TOTAL_KM,
           event: EVENT_NAME,
@@ -390,7 +423,7 @@ log(
 );
 log("start", `Interval: ${POLL_INTERVAL_MS}ms`);
 log("start", `Race:     ${EVENT_NAME} — ${CATEGORY}`);
-log("start", `Start:    ${RACE_START_UTC}`);
+log("start", `Start:    ${RACE_START_OSLO} Oslo (${RACE_START?.toISOString() ?? "?"} UTC)`);
 log("start", `Status:   http://localhost:${STATUS_PORT}/status`);
 log("start", "");
 
