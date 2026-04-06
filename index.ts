@@ -239,7 +239,7 @@ function parseHelmutHtml(html: string): Split[] {
       km,
       split: splitTime,
       last_km: lastKmMatch?.[1]?.trim() || "",
-      projected_finish: projMatch?.[1]?.trim() || "",
+      projected_finish: (projMatch?.[1]?.trim() || "").replace(/^0:(\d{2}:)/, "$1"),
     });
   }
 
@@ -268,7 +268,7 @@ function computeRaceState(splits: Split[]): RaceState {
   let estimatedKm = 0;
   let paceMinPerKm = "0:00";
   let speedKmh = 0;
-  let projectedFinish = "0:00:00";
+  let projectedFinish = "0:00";
 
   if (latestSplit && elapsedSecs > 0) {
     const lastKmSecs = timeToSeconds(latestSplit.last_km);
@@ -351,7 +351,7 @@ function parsePlainTextSplits(text: string): Split[] {
       km,
       split: splitTime,
       last_km: lastKmMatch?.[1]?.trim() || "",
-      projected_finish: projMatch?.[1]?.trim() || "",
+      projected_finish: (projMatch?.[1]?.trim() || "").replace(/^0:(\d{2}:)/, "$1"),
     });
   }
 

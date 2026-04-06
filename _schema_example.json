@@ -8,37 +8,37 @@
   "estimated_position_km": 5.7,
   "pace_min_per_km": "2:38",
   "speed_kmh": 22.8,
-  "projected_finish": "0:27:05",
+  "projected_finish": "27:05",
   "splits": [
     {
       "km": 1,
       "split": "2:44",
       "last_km": "2:44",
-      "projected_finish": "0:27:19"
+      "projected_finish": "27:19"
     },
     {
       "km": 2,
       "split": "5:25",
       "last_km": "2:41",
-      "projected_finish": "0:27:07"
+      "projected_finish": "27:07"
     },
     {
       "km": 3,
       "split": "8:11",
       "last_km": "2:46",
-      "projected_finish": "0:27:18"
+      "projected_finish": "27:18"
     },
     {
       "km": 4,
       "split": "10:55",
       "last_km": "2:43",
-      "projected_finish": "0:27:17"
+      "projected_finish": "27:17"
     },
     {
       "km": 5,
       "split": "13:33",
       "last_km": "2:38",
-      "projected_finish": "0:27:05"
+      "projected_finish": "27:05"
     }
   ]
 }
