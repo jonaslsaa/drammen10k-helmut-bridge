@@ -144,11 +144,21 @@ This is what Flowics receives (and what `/status` returns in `.state`). Use `_sc
 
 ## Flowics setup
 
+You need **admin access** in Flowics to create a Data Connector Input. If you don't have it, ask your Customer Success Manager.
+
 1. In Flowics, go to **Settings > Data Connectors - Inputs**
 2. Click **Add** and select **JSON HTTP Push - Content**
 3. Paste the contents of `_schema_example.json` and click **Generate Schema from Example**
-4. Copy the **Push URL** (includes the auth token)
+4. Copy the **Push URL** (includes the auth token — this is the only authentication, no headers needed)
 5. Use that URL as the `--flowics-url` argument
+
+### Important: IP restrictions
+
+Flowics can restrict which IPs are allowed to push data. If **Allowed IP Networks** is configured on your input, make sure the IP of the machine running this script is whitelisted. If you're running from a laptop, your public IP may change — either leave IP restrictions off or check your IP before the race (`curl ifconfig.me`).
+
+### Schema changes
+
+The JSON you push must match the schema configured in Flowics. If you ever change the output format of this script, you need to update the schema in Flowics too (re-paste `_schema_example.json` and regenerate).
 
 ## Resilience
 
