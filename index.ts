@@ -112,9 +112,13 @@ interface RaceState {
 
 // --- Time helpers ---
 function timeToSeconds(time: string): number {
-  const parts = time.trim().split(":").map(Number);
-  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  const parts = time.trim().split(":");
+  if (parts.length === 3) {
+    return Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[2]);
+  }
+  if (parts.length === 2) {
+    return Number(parts[0]) * 60 + Number(parts[1]);
+  }
   return 0;
 }
 
@@ -139,10 +143,9 @@ function parseHelmutHtml(html: string): Split[] {
   const contentMatch = html.match(
     /<div class="entry-content">[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/
   );
-  if (!contentMatch) return [];
+  if (!contentMatch || !contentMatch[1]) return [];
 
-  const raw = contentMatch[1];
-  const lines = raw
+  const lines = contentMatch[1]
     .split(/<br\s*\/?>/i)
     .map((l) => l.trim())
     .filter(Boolean);
@@ -157,22 +160,31 @@ function parseHelmutHtml(html: string): Split[] {
     const fields = line.split(" ; ");
     if (fields.length < 3) continue;
 
-    const distPart = fields[0].split(/:(.+)/);
-    const dist = distPart[0].trim();
-    const splitTime = distPart[1]?.trim();
+    const distField = fields[0];
+    const lapField = fields[1];
+    const projField = fields[2];
+    if (!distField || !lapField || !projField) continue;
+
+    const colonIdx = distField.indexOf(":");
+    if (colonIdx === -1) continue;
+
+    const dist = distField.slice(0, colonIdx).trim();
+    const splitTime = distField.slice(colonIdx + 1).trim();
     if (!dist || !splitTime) continue;
 
     const kmMatch = dist.match(/(\d+)\s*km/);
-    const km = kmMatch ? Number(kmMatch[1]) : 0;
+    if (!kmMatch || !kmMatch[1]) continue;
+    const km = Number(kmMatch[1]);
     if (km === 0) continue;
 
     // If km goes backwards, treat as a new run (reset)
-    if (splits.length > 0 && km <= splits[splits.length - 1].km) {
+    const prev = splits[splits.length - 1];
+    if (prev && km <= prev.km) {
       splits = [];
     }
 
-    const lastKmMatch = fields[1].match(/last km:\s*(.+)/);
-    const projMatch = fields[2].match(/proj:\s*(.+)/);
+    const lastKmMatch = lapField.match(/last km:\s*(.+)/);
+    const projMatch = projField.match(/proj:\s*(.+)/);
 
     splits.push({
       km,
@@ -191,7 +203,7 @@ function computeRaceState(splits: Split[]): RaceState {
   const start = new Date(RACE_START_UTC);
   const elapsedSecs = (now.getTime() - start.getTime()) / 1000;
 
-  const latestSplit = splits.length > 0 ? splits[splits.length - 1] : null;
+  const latestSplit = splits.at(-1) ?? null;
   const isFinished = latestSplit !== null && latestSplit.km >= TOTAL_KM;
 
   const status: RaceState["status"] =
@@ -237,7 +249,7 @@ function computeRaceState(splits: Split[]): RaceState {
     category: CATEGORY,
     status,
     race_clock: raceClock,
-    latest_km: latestSplit?.km || 0,
+    latest_km: latestSplit?.km ?? 0,
     total_km: TOTAL_KM,
     estimated_position_km: estimatedKm,
     pace_min_per_km: paceMinPerKm,
@@ -260,7 +272,7 @@ let pushErrorCount = 0;
 // --- Fetch from Helmut ---
 async function fetchHelmutData(): Promise<Split[] | null> {
   try {
-    const res = await fetch(HELMUT_URL);
+    const res = await fetch(HELMUT_URL, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) {
       lastFetchError = `HTTP ${res.status}`;
       fetchErrorCount++;
@@ -289,6 +301,7 @@ async function pushToFlowics(state: RaceState): Promise<void> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(state),
+      signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) {
       pushErrorCount++;
@@ -311,8 +324,8 @@ async function tick() {
     lastKnownSplits = splits;
     if (splits.length !== lastSplitCount) {
       log("split", `New split! ${splits.length}/${TOTAL_KM} km recorded`);
-      if (splits.length > 0) {
-        const latest = splits[splits.length - 1];
+      const latest = splits.at(-1);
+      if (latest) {
         log(
           "split",
           `  ${latest.km} km: ${latest.split} | lap: ${latest.last_km} | proj: ${latest.projected_finish}`
