@@ -173,6 +173,8 @@ The `--race-start` flag takes **Oslo local time** — no timezone conversion nee
 
 Example: `--race-start "2026-04-11T14:45"` for a 14:45 start in Drammen.
 
+> **TODO:** The race start can be delayed on the day (weather, etc.). Currently you have to restart the script with a new `--race-start` value. In the future, we should pull the actual start time from the Ultimate Live API so it auto-adjusts. Waiting on API access from Ultimate Live.
+
 ## Restarting
 
 It's safe to restart the script at any time (even mid-race). It has no persistent state — it fetches the current data from Helmut's page on startup and picks up where it left off. You can also change `--race-start` or any other flag between restarts.

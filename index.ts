@@ -250,7 +250,20 @@ function parseHelmutHtml(html: string): Split[] {
 function computeRaceState(splits: Split[]): RaceState {
   const now = new Date();
   const start = RACE_START ?? now;
-  const elapsedSecs = (now.getTime() - start.getTime()) / 1000;
+  let elapsedSecs = (now.getTime() - start.getTime()) / 1000;
+
+  // In simulate mode, map real elapsed time to simulated race time.
+  // Each split is released every SIMULATE_INTERVAL_S real seconds,
+  // but the split times represent real race durations.
+  if (SIMULATE_FILE && simStartTime && splits.length > 0) {
+    const latestSplitSecs = timeToSeconds(splits[splits.length - 1]?.split ?? "0");
+    const realSecsSinceStart = (now.getTime() - simStartTime.getTime()) / 1000;
+    const realSecsSinceLastRelease = realSecsSinceStart % SIMULATE_INTERVAL_S;
+    const fractionToNextSplit = realSecsSinceLastRelease / SIMULATE_INTERVAL_S;
+    // Estimate: we're latestSplitTime + fraction of one lap into the race
+    const lastLapSecs = timeToSeconds(splits[splits.length - 1]?.last_km ?? "0");
+    elapsedSecs = latestSplitSecs + fractionToNextSplit * lastLapSecs;
+  }
 
   const latestSplit = splits.at(-1) ?? null;
   const isFinished = latestSplit !== null && latestSplit.km >= TOTAL_KM;
