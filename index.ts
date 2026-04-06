@@ -7,6 +7,7 @@ const { values: args } = parseArgs({
   options: {
     "helmut-url": { type: "string" },
     "flowics-url": { type: "string" },
+    "flowics-token": { type: "string" },
     "poll-interval": { type: "string", default: "5000" },
     "race-start": { type: "string" },
     "total-km": { type: "string", default: "10" },
@@ -31,6 +32,7 @@ Required:
 
 Optional:
   --flowics-url <url>      Flowics HTTP Push endpoint URL
+  --flowics-token <token>  Flowics Bearer token (from the curl command they give you)
   --poll-interval <ms>     Poll interval in ms (default: 5000)
   --total-km <n>           Total race distance in km (default: 10)
   --event <name>           Event name (default: "Drammen 10K")
@@ -63,6 +65,7 @@ if (!SIMULATE_FILE) {
 
 const HELMUT_URL = args["helmut-url"] || "";
 const FLOWICS_PUSH_URL = args["flowics-url"] || "";
+const FLOWICS_TOKEN = args["flowics-token"] || "";
 const DRY_RUN = args["dry-run"] || false;
 const POLL_INTERVAL_MS = Number(args["poll-interval"]);
 const TOTAL_KM = Number(args["total-km"]);
@@ -424,9 +427,15 @@ async function fetchHelmutData(): Promise<Split[] | null> {
 async function pushToFlowics(state: RaceState): Promise<void> {
   if (DRY_RUN || !FLOWICS_PUSH_URL) return;
   try {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (FLOWICS_TOKEN) {
+      headers["Authorization"] = `Bearer ${FLOWICS_TOKEN}`;
+    }
     const res = await fetch(FLOWICS_PUSH_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(state),
       signal: AbortSignal.timeout(5000),
     });
