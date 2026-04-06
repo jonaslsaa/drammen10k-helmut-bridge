@@ -14,6 +14,8 @@ const { values: args } = parseArgs({
     "category": { type: "string", default: "Male Leaders" },
     "port": { type: "string", default: "3000" },
     "dry-run": { type: "boolean", default: false },
+    simulate: { type: "string" },
+    "simulate-interval": { type: "string", default: "10" },
     help: { type: "boolean", short: "h", default: false },
   },
   strict: true,
@@ -35,11 +37,15 @@ Optional:
   --category <name>        Category name (default: "Male Leaders")
   --port <n>               Status server port (default: 3000)
   --dry-run                Run without pushing to Flowics
+  --simulate <file>        Simulate a race from a test data file (releases splits one by one)
+  --simulate-interval <s>  Seconds between each simulated split (default: 10)
   -h, --help               Show this help
 
 Examples:
   bun run index.ts --helmut-url "http://splits.hwrun.de/?p=17793" --race-start "2026-04-11T14:45" --dry-run
   bun run index.ts --helmut-url "http://splits.hwrun.de/?p=17793" --race-start "2026-04-11T14:45" --flowics-url "https://..."
+  bun run index.ts --simulate testdata.txt --dry-run
+  bun run index.ts --simulate testdata.txt --flowics-url "https://..."
 `);
   process.exit(0);
 }
@@ -47,8 +53,13 @@ Examples:
 // --- Validation ---
 const errors: string[] = [];
 
-if (!args["helmut-url"]) errors.push("--helmut-url is required");
-if (!args["race-start"]) errors.push("--race-start is required");
+const SIMULATE_FILE = args["simulate"] || "";
+const SIMULATE_INTERVAL_S = Number(args["simulate-interval"]);
+
+if (!SIMULATE_FILE) {
+  if (!args["helmut-url"]) errors.push("--helmut-url is required");
+  if (!args["race-start"]) errors.push("--race-start is required");
+}
 
 const HELMUT_URL = args["helmut-url"] || "";
 const FLOWICS_PUSH_URL = args["flowics-url"] || "";
@@ -91,6 +102,9 @@ if (RACE_START_OSLO) {
 const EVENT_NAME = args["event"] || "Drammen 10K";
 const CATEGORY = args["category"] || "Male Leaders";
 const STATUS_PORT = Number(args["port"]);
+
+if (SIMULATE_FILE && isNaN(SIMULATE_INTERVAL_S))
+  errors.push("--simulate-interval must be a number");
 
 if (HELMUT_URL && !/^https?:\/\//.test(HELMUT_URL))
   errors.push("--helmut-url must be a valid HTTP(S) URL");
@@ -291,6 +305,87 @@ function computeRaceState(splits: Split[]): RaceState {
   };
 }
 
+// --- Simulate mode ---
+function parsePlainTextSplits(text: string): Split[] {
+  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+
+  let splits: Split[] = [];
+  for (const line of lines) {
+    if (line === "start") {
+      splits = [];
+      continue;
+    }
+
+    const fields = line.split(" ; ");
+    if (fields.length < 3) continue;
+
+    const distField = fields[0];
+    const lapField = fields[1];
+    const projField = fields[2];
+    if (!distField || !lapField || !projField) continue;
+
+    const colonIdx = distField.indexOf(":");
+    if (colonIdx === -1) continue;
+
+    const dist = distField.slice(0, colonIdx).trim();
+    const splitTime = distField.slice(colonIdx + 1).trim();
+    if (!dist || !splitTime) continue;
+
+    const kmMatch = dist.match(/(\d+)\s*km/);
+    if (!kmMatch || !kmMatch[1]) continue;
+    const km = Number(kmMatch[1]);
+    if (km === 0) continue;
+
+    const prev = splits[splits.length - 1];
+    if (prev && km <= prev.km) {
+      splits = [];
+    }
+
+    const lastKmMatch = lapField.match(/last km:\s*(.+)/);
+    const projMatch = projField.match(/proj:\s*(.+)/);
+
+    splits.push({
+      km,
+      split: splitTime,
+      last_km: lastKmMatch?.[1]?.trim() || "",
+      projected_finish: projMatch?.[1]?.trim() || "",
+    });
+  }
+
+  return splits;
+}
+
+let allSimSplits: Split[] = [];
+let simStartTime: Date | null = null;
+
+if (SIMULATE_FILE) {
+  const file = Bun.file(SIMULATE_FILE);
+  if (!(await file.exists())) {
+    console.error(`Simulate file not found: ${SIMULATE_FILE}`);
+    process.exit(1);
+  }
+  const text = await file.text();
+  allSimSplits = parsePlainTextSplits(text);
+  if (allSimSplits.length === 0) {
+    console.error(`No splits found in ${SIMULATE_FILE}`);
+    process.exit(1);
+  }
+  simStartTime = new Date();
+  RACE_START = simStartTime;
+  log("sim", `Loaded ${allSimSplits.length} splits from ${SIMULATE_FILE}`);
+  log("sim", `Will release one split every ${SIMULATE_INTERVAL_S}s`);
+}
+
+function getSimulatedSplits(): Split[] {
+  if (!simStartTime) return [];
+  const elapsed = (Date.now() - simStartTime.getTime()) / 1000;
+  const released = Math.min(
+    Math.floor(elapsed / SIMULATE_INTERVAL_S),
+    allSimSplits.length
+  );
+  return allSimSplits.slice(0, released);
+}
+
 // --- State ---
 let lastKnownSplits: Split[] = [];
 let lastSplitCount = 0;
@@ -350,7 +445,13 @@ async function pushToFlowics(state: RaceState): Promise<void> {
 
 // --- Main tick ---
 async function tick() {
-  const splits = await fetchHelmutData();
+  let splits: Split[] | null;
+
+  if (SIMULATE_FILE) {
+    splits = getSimulatedSplits();
+  } else {
+    splits = await fetchHelmutData();
+  }
 
   if (splits !== null) {
     lastKnownSplits = splits;
@@ -416,14 +517,18 @@ serve({
 
 // --- Start ---
 log("start", "=== Helmut Bridge ===");
-log("start", `Source:   ${HELMUT_URL}`);
+if (SIMULATE_FILE) {
+  log("start", `Mode:     SIMULATE from ${SIMULATE_FILE} (1 split every ${SIMULATE_INTERVAL_S}s)`);
+} else {
+  log("start", `Source:   ${HELMUT_URL}`);
+  log("start", `Start:    ${RACE_START_OSLO} Oslo (${RACE_START?.toISOString() ?? "?"} UTC)`);
+}
 log(
   "start",
   `Push to:  ${DRY_RUN ? "(dry run)" : FLOWICS_PUSH_URL}`
 );
 log("start", `Interval: ${POLL_INTERVAL_MS}ms`);
 log("start", `Race:     ${EVENT_NAME} — ${CATEGORY}`);
-log("start", `Start:    ${RACE_START_OSLO} Oslo (${RACE_START?.toISOString() ?? "?"} UTC)`);
 log("start", `Status:   http://localhost:${STATUS_PORT}/status`);
 log("start", "");
 

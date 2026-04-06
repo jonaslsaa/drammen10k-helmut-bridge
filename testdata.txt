@@ -1,0 +1,11 @@
+start
+1 km: 2:44 ; last km: 2:44 ; proj: 0:27:19
+2 km: 5:25 ; last km: 2:41 ; proj: 0:27:07
+3 km: 8:11 ; last km: 2:46 ; proj: 0:27:18
+4 km: 10:55 ; last km: 2:43 ; proj: 0:27:17
+5 km: 13:33 ; last km: 2:38 ; proj: 0:27:05
+6 km: 16:14 ; last km: 2:41 ; proj: 0:27:03
+7 km: 18:57 ; last km: 2:43 ; proj: 0:27:04
+8 km: 21:38 ; last km: 2:41 ; proj: 0:27:02
+9 km: 24:14 ; last km: 2:37 ; proj: 0:26:56
+10 km: 26:53 ; last km: 2:38 ; proj: 0:26:53
