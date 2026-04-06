@@ -8,7 +8,7 @@ const { values: args } = parseArgs({
     "helmut-url": { type: "string" },
     "flowics-url": { type: "string" },
     "flowics-token": { type: "string" },
-    "poll-interval": { type: "string", default: "5000" },
+    "poll-interval": { type: "string", default: "2000" },
     "race-start": { type: "string" },
     "total-km": { type: "string", default: "10" },
     "event": { type: "string", default: "Drammen 10K" },
