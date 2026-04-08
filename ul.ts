@@ -120,6 +120,7 @@ export interface LeaderboardSet {
 
 export interface AllLeaderboards {
   mixed: LeaderboardSet;
+  men: LeaderboardSet;
   women: LeaderboardSet;
 }
 
@@ -213,23 +214,28 @@ export async function fetchAllLeaderboards(
       ulFetch("timingpointstandings", { time: "Finish", records: "100" }).catch(() => [] as UlRecord[]),
     ]);
 
-    // Split: mixed (everyone) and women-only
+    // Split by gender
+    const men5km = all5km.filter((r) => r.Gender === "M");
+    const men10km = all10km.filter((r) => r.Gender === "M");
     const women5km = all5km.filter((r) => r.Gender === "W");
     const women10km = all10km.filter((r) => r.Gender === "W");
 
     const mixed = buildLeaderboardSet(all5km, all10km, "", maxEntries);
+    const men = buildLeaderboardSet(men5km, men10km, "Men", maxEntries);
     const women = buildLeaderboardSet(women5km, women10km, "Women", maxEntries);
 
     const mx5 = mixed["5km_leaderboard"].entries.length;
     const mx10 = mixed["10km_leaderboard"].entries.length;
+    const m5 = men["5km_leaderboard"].entries.length;
+    const m10 = men["10km_leaderboard"].entries.length;
     const w5 = women["5km_leaderboard"].entries.length;
     const w10 = women["10km_leaderboard"].entries.length;
 
-    if (mx5 + mx10 + w5 + w10 > 0) {
-      log("ul", `Leaderboards: Mixed 5km=${mx5} 10km=${mx10} | Women 5km=${w5} 10km=${w10}`);
+    if (mx5 + mx10 + m5 + m10 + w5 + w10 > 0) {
+      log("ul", `Leaderboards: Mixed 5km=${mx5} 10km=${mx10} | Men 5km=${m5} 10km=${m10} | Women 5km=${w5} 10km=${w10}`);
     }
 
-    return { mixed, women };
+    return { mixed, men, women };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     log("ul", `ERROR (leaderboards): ${msg}`);

@@ -10,7 +10,7 @@ import {
 } from "./env";
 import { timeToSeconds, osloToUtc, log } from "./time";
 import { type Split, fetchHelmutData, parsePlainTextSplits, getHelmutStats } from "./helmut";
-import { UL_ENABLED, syncStartTime, fetchAllLeaderboards, buildLeaderboard, type AllLeaderboards, type UlRecord } from "./ul";
+import { UL_ENABLED, syncStartTime, fetchAllLeaderboards, buildLeaderboardSet, type AllLeaderboards, type UlRecord } from "./ul";
 import { computeRaceState, type RaceState } from "./race-state";
 
 // --- CLI args (runtime-only flags) ---
@@ -119,36 +119,17 @@ function getSimulatedLeaderboards(currentKm: number): AllLeaderboards | null {
   const all5km = currentKm >= 5 ? simLeaderboard5km : [];
   const all10km = currentKm >= 10 ? simLeaderboard10km : [];
 
+  const men5km = all5km.filter((r) => r.Gender === "M");
+  const men10km = all10km.filter((r) => r.Gender === "M");
   const women5km = all5km.filter((r) => r.Gender === "W");
   const women10km = all10km.filter((r) => r.Gender === "W");
 
   const maxEntries = UL_LEADERBOARD_SIZE;
 
-  const mixedLb5 = all5km.length > 0
-    ? buildLeaderboard(all5km.slice(0, maxEntries), "Standings 5 km", "Time1")
-    : { title: "Standings 5 km", timing_point: "Time1", entries: [] };
-  const mixedLb10 = all10km.length > 0
-    ? buildLeaderboard(all10km.slice(0, maxEntries), "Results 10 km", "Finish")
-    : { title: "Results 10 km", timing_point: "Finish", entries: [] };
-
-  const womenLb5 = women5km.length > 0
-    ? buildLeaderboard(women5km.slice(0, maxEntries), "Standings 5 km Women", "Time1")
-    : { title: "Standings 5 km Women", timing_point: "Time1", entries: [] };
-  const womenLb10 = women10km.length > 0
-    ? buildLeaderboard(women10km.slice(0, maxEntries), "Results 10 km Women", "Finish")
-    : { title: "Results 10 km Women", timing_point: "Finish", entries: [] };
-
   return {
-    mixed: {
-      "5km_leaderboard": mixedLb5,
-      "10km_leaderboard": mixedLb10,
-      auto_leaderboard: mixedLb10.entries.length > 0 ? mixedLb10 : mixedLb5,
-    },
-    women: {
-      "5km_leaderboard": womenLb5,
-      "10km_leaderboard": womenLb10,
-      auto_leaderboard: womenLb10.entries.length > 0 ? womenLb10 : womenLb5,
-    },
+    mixed: buildLeaderboardSet(all5km, all10km, "", maxEntries),
+    men: buildLeaderboardSet(men5km, men10km, "Men", maxEntries),
+    women: buildLeaderboardSet(women5km, women10km, "Women", maxEntries),
   };
 }
 
