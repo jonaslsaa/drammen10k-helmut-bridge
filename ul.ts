@@ -103,7 +103,7 @@ export interface LeaderboardEntry {
   country: string;
   country_flag_url: string | null;
   time: string;
-  gap: string | null;
+  gap: string;
 }
 
 export interface Leaderboard {
@@ -153,7 +153,7 @@ export function buildLeaderboard(records: UlRecord[], title: string, timingPoint
       country,
       country_flag_url: iocToFlagUrl(country),
       time: formatTime(runnerTime),
-      gap: i === 0 ? null : computeGap(leaderSecs, runnerSecs),
+      gap: i === 0 ? "-" : computeGap(leaderSecs, runnerSecs),
     };
   });
 

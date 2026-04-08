@@ -21,7 +21,7 @@
       "title": "Standings 5 km",
       "timing_point": "Time1",
       "entries": [
-        { "position": 1, "name": "Jakob Ingebrigtsen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:33", "gap": null },
+        { "position": 1, "name": "Jakob Ingebrigtsen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:33", "gap": "-" },
         { "position": 2, "name": "Sondre Moen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:36", "gap": "+0:03" },
         { "position": 3, "name": "Filip Ingebrigtsen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:41", "gap": "+0:08" },
         { "position": 4, "name": "Zerei Kbrom Mezngi", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:47", "gap": "+0:14" },
@@ -37,7 +37,7 @@
       "title": "Standings 5 km",
       "timing_point": "Time1",
       "entries": [
-        { "position": 1, "name": "Jakob Ingebrigtsen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:33", "gap": null },
+        { "position": 1, "name": "Jakob Ingebrigtsen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:33", "gap": "-" },
         { "position": 2, "name": "Sondre Moen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:36", "gap": "+0:03" },
         { "position": 3, "name": "Filip Ingebrigtsen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:41", "gap": "+0:08" },
         { "position": 4, "name": "Zerei Kbrom Mezngi", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:47", "gap": "+0:14" },
@@ -50,7 +50,7 @@
       "title": "Standings 5 km Women",
       "timing_point": "Time1",
       "entries": [
-        { "position": 1, "name": "Karoline Bjerkeli Grøvdal", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "15:10", "gap": null },
+        { "position": 1, "name": "Karoline Bjerkeli Grøvdal", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "15:10", "gap": "-" },
         { "position": 2, "name": "Sarah Lahti", "country": "SWE", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/se.svg", "time": "15:13", "gap": "+0:03" },
         { "position": 3, "name": "Hanne Mjøen Maridal", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "15:18", "gap": "+0:08" }
       ]
@@ -64,7 +64,7 @@
       "title": "Standings 5 km Women",
       "timing_point": "Time1",
       "entries": [
-        { "position": 1, "name": "Karoline Bjerkeli Grøvdal", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "15:10", "gap": null },
+        { "position": 1, "name": "Karoline Bjerkeli Grøvdal", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "15:10", "gap": "-" },
         { "position": 2, "name": "Sarah Lahti", "country": "SWE", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/se.svg", "time": "15:13", "gap": "+0:03" },
         { "position": 3, "name": "Hanne Mjøen Maridal", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "15:18", "gap": "+0:08" }
       ]

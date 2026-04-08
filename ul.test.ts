@@ -41,7 +41,7 @@ describe("buildLeaderboard", () => {
           country_flag_url:
             "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg",
           time: "13:33",
-          gap: null,
+          gap: "-",
         },
         {
           position: 2,
@@ -86,7 +86,8 @@ describe("fetchAllLeaderboards", () => {
   test("splits mixed and women leaderboards from timing point results", async () => {
     const originalFetch = globalThis.fetch;
 
-    globalThis.fetch = mock(async (input: string | URL | Request) => {
+    // @ts-ignore mock fetch for testing
+    globalThis.fetch = mock(async (input: string | URL | Request): Promise<Response> => {
       const url = typeof input === "string"
         ? input
         : input instanceof URL
