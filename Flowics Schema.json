@@ -32,6 +32,26 @@
         "projected_finish": {
             "type": "string"
         },
+        "record_pace": {
+            "type": "object",
+            "properties": {
+                "record_label": {
+                    "type": "string"
+                },
+                "record_time": {
+                    "type": "string"
+                },
+                "projected_time": {
+                    "type": "string"
+                },
+                "difference": {
+                    "type": "string"
+                },
+                "ahead": {
+                    "type": "boolean"
+                }
+            }
+        },
         "splits": {
             "type": "array",
             "items": {

@@ -20,6 +20,8 @@ describe("computeRaceState", () => {
         totalKm: 10,
         event: "Drammen 10K",
         category: "Male Leaders",
+        recordLabel: "European Record",
+        recordTime: "26:33",
       })
     ).toMatchObject({
       status: "waiting",
@@ -43,6 +45,8 @@ describe("computeRaceState", () => {
         totalKm: 10,
         event: "Drammen 10K",
         category: "Male Leaders",
+        recordLabel: "European Record",
+        recordTime: "26:33",
       })
     ).toMatchObject({
       status: "live",
@@ -67,6 +71,8 @@ describe("computeRaceState", () => {
         totalKm: 10,
         event: "Drammen 10K",
         category: "Male Leaders",
+        recordLabel: "European Record",
+        recordTime: "26:33",
         elapsedSecsOverride: 406,
       })
     ).toMatchObject({
@@ -95,6 +101,8 @@ describe("computeRaceState", () => {
         totalKm: 10,
         event: "Drammen 10K",
         category: "Male Leaders",
+        recordLabel: "European Record",
+        recordTime: "26:33",
       })
     ).toMatchObject({
       status: "finished",

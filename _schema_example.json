@@ -9,6 +9,13 @@
   "pace_min_per_km": "2:38",
   "speed_kmh": 22.8,
   "projected_finish": "27:05",
+  "record_pace": {
+    "record_label": "European Record",
+    "record_time": "26:33",
+    "projected_time": "27:05",
+    "difference": "0:32",
+    "ahead": false
+  },
   "splits": [
     { "km": 1, "split": "2:44", "last_km": "2:44", "projected_finish": "27:19" },
     { "km": 2, "split": "5:25", "last_km": "2:41", "projected_finish": "27:07" },

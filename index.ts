@@ -4,6 +4,7 @@ import {
   FLOWICS_PUSH_URL, FLOWICS_TOKEN,
   HELMUT_URL, RACE_START_OSLO,
   TOTAL_KM, EVENT_NAME, CATEGORY,
+  RECORD_LABEL, RECORD_TIME,
   POLL_INTERVAL_MS, STATUS_PORT,
   UL_EVENT_ID, UL_SYNC_INTERVAL_MS, UL_LEADERBOARD_SIZE,
 } from "./env";
@@ -73,6 +74,8 @@ function buildRaceState(splits: Split[]): RaceState {
     totalKm: TOTAL_KM,
     event: EVENT_NAME,
     category: CATEGORY,
+    recordLabel: RECORD_LABEL,
+    recordTime: RECORD_TIME,
     elapsedSecsOverride,
   });
 }

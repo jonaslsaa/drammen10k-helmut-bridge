@@ -1,6 +1,14 @@
 import { timeToSeconds, secondsToTime } from "./time";
 import type { Split } from "./helmut";
 
+export interface RecordPace {
+  record_label: string;
+  record_time: string;
+  projected_time: string;
+  difference: string;
+  ahead: boolean;
+}
+
 export interface RaceState {
   event: string;
   category: string;
@@ -12,6 +20,7 @@ export interface RaceState {
   pace_min_per_km: string;
   speed_kmh: number;
   projected_finish: string;
+  record_pace: RecordPace;
   splits: Split[];
 }
 
@@ -22,6 +31,8 @@ interface ComputeRaceStateInput {
   totalKm: number;
   event: string;
   category: string;
+  recordLabel: string;
+  recordTime: string;
   elapsedSecsOverride?: number;
 }
 
@@ -32,6 +43,8 @@ export function computeRaceState({
   totalKm,
   event,
   category,
+  recordLabel,
+  recordTime,
   elapsedSecsOverride,
 }: ComputeRaceStateInput): RaceState {
   let elapsedSecs = (now.getTime() - raceStart.getTime()) / 1000;
@@ -81,6 +94,20 @@ export function computeRaceState({
     projectedFinish = latestSplit.projected_finish;
   }
 
+  // Record pace comparison
+  const recordSecs = timeToSeconds(recordTime);
+  const projectedSecs = timeToSeconds(projectedFinish);
+  const diffSecs = Math.abs(recordSecs - projectedSecs);
+  const ahead = projectedSecs > 0 && projectedSecs <= recordSecs;
+
+  const recordPace: RecordPace = {
+    record_label: recordLabel,
+    record_time: recordTime,
+    projected_time: projectedFinish,
+    difference: projectedSecs > 0 ? secondsToTime(diffSecs) : "0:00",
+    ahead,
+  };
+
   return {
     event,
     category,
@@ -92,6 +119,7 @@ export function computeRaceState({
     pace_min_per_km: paceMinPerKm,
     speed_kmh: speedKmh,
     projected_finish: projectedFinish,
+    record_pace: recordPace,
     splits,
   };
 }

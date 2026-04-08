@@ -60,6 +60,10 @@ export const TOTAL_KM = optionalInt("TOTAL_KM", 10, 1);
 export const EVENT_NAME = optional("EVENT_NAME", "Drammen 10K");
 export const CATEGORY = optional("CATEGORY", "Male Leaders");
 
+// --- Record pace comparison ---
+export const RECORD_LABEL = required("RECORD_LABEL");
+export const RECORD_TIME = required("RECORD_TIME");
+
 // --- Server ---
 export const POLL_INTERVAL_MS = optionalInt("POLL_INTERVAL_MS", 5000, 1000);
 export const STATUS_PORT = optionalInt("STATUS_PORT", 3000, 1);
