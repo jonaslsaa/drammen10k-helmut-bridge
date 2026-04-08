@@ -79,7 +79,7 @@
                                         "type": "string"
                                     },
                                     "country_flag_url": {
-                                        "type": "imageURL"
+                                        "type": "ImageUrl"
                                     },
                                     "time": {
                                         "type": "string",
