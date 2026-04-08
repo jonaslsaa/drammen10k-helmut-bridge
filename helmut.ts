@@ -1,5 +1,3 @@
-import { HELMUT_URL } from "./env";
-
 export interface Split {
   km: number;
   split: string;
@@ -124,9 +122,12 @@ export function getHelmutStats() {
   return { fetchSuccessCount, fetchErrorCount, lastFetchError };
 }
 
-export async function fetchHelmutData(log: (tag: string, msg: string) => void): Promise<Split[] | null> {
+export async function fetchHelmutData(
+  helmutUrl: string,
+  log: (tag: string, msg: string) => void
+): Promise<Split[] | null> {
   try {
-    const res = await fetch(HELMUT_URL, { signal: AbortSignal.timeout(5000) });
+    const res = await fetch(helmutUrl, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) {
       lastFetchError = `HTTP ${res.status}`;
       fetchErrorCount++;

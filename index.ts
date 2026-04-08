@@ -7,9 +7,10 @@ import {
   POLL_INTERVAL_MS, STATUS_PORT,
   UL_EVENT_ID, UL_SYNC_INTERVAL_MS,
 } from "./env";
-import { timeToSeconds, secondsToTime, osloToUtc, log } from "./time";
+import { timeToSeconds, osloToUtc, log } from "./time";
 import { type Split, fetchHelmutData, parsePlainTextSplits, getHelmutStats } from "./helmut";
 import { UL_ENABLED, syncStartTime } from "./ul";
+import { computeRaceState, type RaceState } from "./race-state";
 
 // --- CLI args (runtime-only flags) ---
 const { values: args } = parseArgs({
@@ -47,29 +48,14 @@ const DRY_RUN = args["dry-run"] || false;
 const SIMULATE_FILE = args["simulate"] || "";
 const SIMULATE_INTERVAL_S = Number(args["simulate-interval"]);
 
-// --- Race state types ---
-interface RaceState {
-  event: string;
-  category: string;
-  status: "waiting" | "live" | "finished";
-  race_clock: string;
-  latest_km: number;
-  total_km: number;
-  estimated_position_km: number;
-  pace_min_per_km: string;
-  speed_kmh: number;
-  projected_finish: string;
-  splits: Split[];
-}
-
 // --- Race start time (mutable — can be updated by Ultimate Live) ---
 let RACE_START: Date = osloToUtc(RACE_START_OSLO);
 let raceStartSource: "cli" | "ultimate-live" = "cli";
 
 // --- Compute full race state ---
-function computeRaceState(splits: Split[]): RaceState {
+function buildRaceState(splits: Split[]): RaceState {
   const now = new Date();
-  let elapsedSecs = (now.getTime() - RACE_START.getTime()) / 1000;
+  let elapsedSecsOverride: number | undefined;
 
   if (SIMULATE_FILE && simStartTime && splits.length > 0) {
     const latestSplitSecs = timeToSeconds(splits[splits.length - 1]?.split ?? "0");
@@ -77,63 +63,18 @@ function computeRaceState(splits: Split[]): RaceState {
     const realSecsSinceLastRelease = realSecsSinceStart % SIMULATE_INTERVAL_S;
     const fractionToNextSplit = realSecsSinceLastRelease / SIMULATE_INTERVAL_S;
     const lastLapSecs = timeToSeconds(splits[splits.length - 1]?.last_km ?? "0");
-    elapsedSecs = latestSplitSecs + fractionToNextSplit * lastLapSecs;
+    elapsedSecsOverride = latestSplitSecs + fractionToNextSplit * lastLapSecs;
   }
 
-  const latestSplit = splits.at(-1) ?? null;
-  const isFinished = latestSplit !== null && latestSplit.km >= TOTAL_KM;
-
-  const status: RaceState["status"] =
-    elapsedSecs < 0 ? "waiting" : isFinished ? "finished" : "live";
-
-  const raceClock =
-    status === "waiting"
-      ? `-${secondsToTime(-elapsedSecs)}`
-      : isFinished && latestSplit
-        ? latestSplit.split
-        : secondsToTime(elapsedSecs);
-
-  let estimatedKm = 0;
-  let paceMinPerKm = "0:00";
-  let speedKmh = 0;
-  let projectedFinish = "0:00";
-
-  if (latestSplit && elapsedSecs > 0) {
-    const lastKmSecs = timeToSeconds(latestSplit.last_km);
-    const splitSecs = timeToSeconds(latestSplit.split);
-
-    if (isFinished) {
-      estimatedKm = TOTAL_KM;
-    } else {
-      const secsSinceLastSplit = elapsedSecs - splitSecs;
-      if (secsSinceLastSplit > 0 && lastKmSecs > 0) {
-        estimatedKm = latestSplit.km + secsSinceLastSplit / lastKmSecs;
-      } else {
-        estimatedKm = latestSplit.km;
-      }
-      estimatedKm = Math.min(estimatedKm, TOTAL_KM);
-    }
-    estimatedKm = Math.round(estimatedKm * 10) / 10;
-
-    paceMinPerKm = latestSplit.last_km;
-    speedKmh =
-      lastKmSecs > 0 ? Math.round((3600 / lastKmSecs) * 10) / 10 : 0;
-    projectedFinish = latestSplit.projected_finish;
-  }
-
-  return {
+  return computeRaceState({
+    now,
+    raceStart: RACE_START,
+    splits,
+    totalKm: TOTAL_KM,
     event: EVENT_NAME,
     category: CATEGORY,
-    status,
-    race_clock: raceClock,
-    latest_km: latestSplit?.km ?? 0,
-    total_km: TOTAL_KM,
-    estimated_position_km: estimatedKm,
-    pace_min_per_km: paceMinPerKm,
-    speed_kmh: speedKmh,
-    projected_finish: projectedFinish,
-    splits,
-  };
+    elapsedSecsOverride,
+  });
 }
 
 // --- Simulate mode ---
@@ -211,7 +152,7 @@ async function tick() {
   if (SIMULATE_FILE) {
     splits = getSimulatedSplits();
   } else {
-    splits = await fetchHelmutData(log);
+    splits = await fetchHelmutData(HELMUT_URL, log);
   }
 
   if (splits !== null) {
@@ -228,7 +169,7 @@ async function tick() {
     log("fetch", `Using last known data (${lastKnownSplits.length} splits)`);
   }
 
-  const state = computeRaceState(lastKnownSplits);
+  const state = buildRaceState(lastKnownSplits);
   lastState = state;
 
   log("tick", `${state.status} | clock: ${state.race_clock} | lead: ${state.estimated_position_km} km | pace: ${state.pace_min_per_km}/km | proj: ${state.projected_finish}`);
