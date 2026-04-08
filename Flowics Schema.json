@@ -1,0 +1,240 @@
+{
+    "type": "object",
+    "properties": {
+        "event": {
+            "type": "string"
+        },
+        "category": {
+            "type": "string"
+        },
+        "status": {
+            "type": "string"
+        },
+        "race_clock": {
+            "type": "string",
+            "format": "time"
+        },
+        "latest_km": {
+            "type": "integer"
+        },
+        "total_km": {
+            "type": "integer"
+        },
+        "estimated_position_km": {
+            "type": "number"
+        },
+        "pace_min_per_km": {
+            "type": "string"
+        },
+        "speed_kmh": {
+            "type": "number"
+        },
+        "projected_finish": {
+            "type": "string"
+        },
+        "splits": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "km": {
+                        "type": "integer"
+                    },
+                    "split": {
+                        "type": "string"
+                    },
+                    "last_km": {
+                        "type": "string"
+                    },
+                    "projected_finish": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "mixed": {
+            "type": "object",
+            "properties": {
+                "5km_leaderboard": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": "string"
+                        },
+                        "timing_point": {
+                            "type": "string"
+                        },
+                        "entries": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "position": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "country_flag_url": {
+                                        "type": "imageURL"
+                                    },
+                                    "time": {
+                                        "type": "string",
+                                        "format": "time"
+                                    },
+                                    "gap": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "10km_leaderboard": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": "string"
+                        },
+                        "timing_point": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "auto_leaderboard": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": "string"
+                        },
+                        "timing_point": {
+                            "type": "string"
+                        },
+                        "entries": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "position": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "country_flag_url": {
+                                        "type": "ImageUrl"
+                                    },
+                                    "time": {
+                                        "type": "string",
+                                        "format": "time"
+                                    },
+                                    "gap": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "women": {
+            "type": "object",
+            "properties": {
+                "5km_leaderboard": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": "string"
+                        },
+                        "timing_point": {
+                            "type": "string"
+                        },
+                        "entries": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "position": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "country_flag_url": {
+                                        "type": "ImageUrl"
+                                    },
+                                    "time": {
+                                        "type": "string",
+                                        "format": "time"
+                                    },
+                                    "gap": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "10km_leaderboard": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": "string"
+                        },
+                        "timing_point": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "auto_leaderboard": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": "string"
+                        },
+                        "timing_point": {
+                            "type": "string"
+                        },
+                        "entries": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "position": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "country_flag_url": {
+                                        "type": "ImageUrl"
+                                    },
+                                    "time": {
+                                        "type": "string",
+                                        "format": "time"
+                                    },
+                                    "gap": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
