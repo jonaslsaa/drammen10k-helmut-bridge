@@ -1,15 +1,18 @@
 {
   "name": "helmut",
   "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "test": "bun test"
-  },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "private": true,
+  "scripts": {
+    "test": "bun test"
+  },
+  "type": "module",
+  "dependencies": {
+    "convert-country-codes": "^1.0.0"
   }
 }

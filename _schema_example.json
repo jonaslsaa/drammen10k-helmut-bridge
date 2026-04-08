@@ -10,35 +10,64 @@
   "speed_kmh": 22.8,
   "projected_finish": "27:05",
   "splits": [
-    {
-      "km": 1,
-      "split": "2:44",
-      "last_km": "2:44",
-      "projected_finish": "27:19"
+    { "km": 1, "split": "2:44", "last_km": "2:44", "projected_finish": "27:19" },
+    { "km": 2, "split": "5:25", "last_km": "2:41", "projected_finish": "27:07" },
+    { "km": 3, "split": "8:11", "last_km": "2:46", "projected_finish": "27:18" },
+    { "km": 4, "split": "10:55", "last_km": "2:43", "projected_finish": "27:17" },
+    { "km": 5, "split": "13:33", "last_km": "2:38", "projected_finish": "27:05" }
+  ],
+  "mixed": {
+    "5km_leaderboard": {
+      "title": "Standings 5 km",
+      "timing_point": "Time1",
+      "entries": [
+        { "position": 1, "name": "Jakob Ingebrigtsen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:33", "gap": null },
+        { "position": 2, "name": "Sondre Moen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:36", "gap": "+0:03" },
+        { "position": 3, "name": "Filip Ingebrigtsen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:41", "gap": "+0:08" },
+        { "position": 4, "name": "Zerei Kbrom Mezngi", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:47", "gap": "+0:14" },
+        { "position": 5, "name": "Karoline Bjerkeli Grøvdal", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "15:10", "gap": "+1:37" }
+      ]
     },
-    {
-      "km": 2,
-      "split": "5:25",
-      "last_km": "2:41",
-      "projected_finish": "27:07"
+    "10km_leaderboard": {
+      "title": "Results 10 km",
+      "timing_point": "Finish",
+      "entries": []
     },
-    {
-      "km": 3,
-      "split": "8:11",
-      "last_km": "2:46",
-      "projected_finish": "27:18"
-    },
-    {
-      "km": 4,
-      "split": "10:55",
-      "last_km": "2:43",
-      "projected_finish": "27:17"
-    },
-    {
-      "km": 5,
-      "split": "13:33",
-      "last_km": "2:38",
-      "projected_finish": "27:05"
+    "auto_leaderboard": {
+      "title": "Standings 5 km",
+      "timing_point": "Time1",
+      "entries": [
+        { "position": 1, "name": "Jakob Ingebrigtsen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:33", "gap": null },
+        { "position": 2, "name": "Sondre Moen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:36", "gap": "+0:03" },
+        { "position": 3, "name": "Filip Ingebrigtsen", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:41", "gap": "+0:08" },
+        { "position": 4, "name": "Zerei Kbrom Mezngi", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "13:47", "gap": "+0:14" },
+        { "position": 5, "name": "Karoline Bjerkeli Grøvdal", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "15:10", "gap": "+1:37" }
+      ]
     }
-  ]
+  },
+  "women": {
+    "5km_leaderboard": {
+      "title": "Standings 5 km Women",
+      "timing_point": "Time1",
+      "entries": [
+        { "position": 1, "name": "Karoline Bjerkeli Grøvdal", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "15:10", "gap": null },
+        { "position": 2, "name": "Sarah Lahti", "country": "SWE", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/se.svg", "time": "15:13", "gap": "+0:03" },
+        { "position": 3, "name": "Hanne Mjøen Maridal", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "15:18", "gap": "+0:08" }
+      ]
+    },
+    "10km_leaderboard": {
+      "title": "Results 10 km Women",
+      "timing_point": "Finish",
+      "entries": []
+    },
+    "auto_leaderboard": {
+      "title": "Standings 5 km Women",
+      "timing_point": "Time1",
+      "entries": [
+        { "position": 1, "name": "Karoline Bjerkeli Grøvdal", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "15:10", "gap": null },
+        { "position": 2, "name": "Sarah Lahti", "country": "SWE", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/se.svg", "time": "15:13", "gap": "+0:03" },
+        { "position": 3, "name": "Hanne Mjøen Maridal", "country": "NOR", "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg", "time": "15:18", "gap": "+0:08" }
+      ]
+    }
+  }
 }

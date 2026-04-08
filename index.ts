@@ -5,11 +5,11 @@ import {
   HELMUT_URL, RACE_START_OSLO,
   TOTAL_KM, EVENT_NAME, CATEGORY,
   POLL_INTERVAL_MS, STATUS_PORT,
-  UL_EVENT_ID, UL_SYNC_INTERVAL_MS,
+  UL_EVENT_ID, UL_SYNC_INTERVAL_MS, UL_LEADERBOARD_SIZE,
 } from "./env";
 import { timeToSeconds, osloToUtc, log } from "./time";
 import { type Split, fetchHelmutData, parsePlainTextSplits, getHelmutStats } from "./helmut";
-import { UL_ENABLED, syncStartTime } from "./ul";
+import { UL_ENABLED, syncStartTime, fetchAllLeaderboards, buildLeaderboard, type AllLeaderboards, type UlRecord } from "./ul";
 import { computeRaceState, type RaceState } from "./race-state";
 
 // --- CLI args (runtime-only flags) ---
@@ -80,6 +80,8 @@ function buildRaceState(splits: Split[]): RaceState {
 // --- Simulate mode ---
 let allSimSplits: Split[] = [];
 let simStartTime: Date | null = null;
+let simLeaderboard5km: UlRecord[] = [];
+let simLeaderboard10km: UlRecord[] = [];
 
 if (SIMULATE_FILE) {
   const file = Bun.file(SIMULATE_FILE);
@@ -97,6 +99,54 @@ if (SIMULATE_FILE) {
   RACE_START = simStartTime;
   log("sim", `Loaded ${allSimSplits.length} splits from ${SIMULATE_FILE}`);
   log("sim", `Will release one split every ${SIMULATE_INTERVAL_S}s`);
+
+  // Load simulated leaderboard data if available
+  const lbFile = Bun.file("testdata_leaderboard.json");
+  if (await lbFile.exists()) {
+    const lbData = await lbFile.json() as { "5km"?: UlRecord[]; "10km"?: UlRecord[] };
+    simLeaderboard5km = lbData["5km"] ?? [];
+    simLeaderboard10km = lbData["10km"] ?? [];
+    log("sim", `Loaded leaderboard data: 5km=${simLeaderboard5km.length} 10km=${simLeaderboard10km.length} entries`);
+  }
+}
+
+function getSimulatedLeaderboards(currentKm: number): AllLeaderboards | null {
+  if (simLeaderboard5km.length === 0 && simLeaderboard10km.length === 0) return null;
+
+  const all5km = currentKm >= 5 ? simLeaderboard5km : [];
+  const all10km = currentKm >= 10 ? simLeaderboard10km : [];
+
+  const women5km = all5km.filter((r) => r.Gender === "W");
+  const women10km = all10km.filter((r) => r.Gender === "W");
+
+  const maxEntries = UL_LEADERBOARD_SIZE;
+
+  const mixedLb5 = all5km.length > 0
+    ? buildLeaderboard(all5km.slice(0, maxEntries), "Standings 5 km", "Time1")
+    : { title: "Standings 5 km", timing_point: "Time1", entries: [] };
+  const mixedLb10 = all10km.length > 0
+    ? buildLeaderboard(all10km.slice(0, maxEntries), "Results 10 km", "Finish")
+    : { title: "Results 10 km", timing_point: "Finish", entries: [] };
+
+  const womenLb5 = women5km.length > 0
+    ? buildLeaderboard(women5km.slice(0, maxEntries), "Standings 5 km Women", "Time1")
+    : { title: "Standings 5 km Women", timing_point: "Time1", entries: [] };
+  const womenLb10 = women10km.length > 0
+    ? buildLeaderboard(women10km.slice(0, maxEntries), "Results 10 km Women", "Finish")
+    : { title: "Results 10 km Women", timing_point: "Finish", entries: [] };
+
+  return {
+    mixed: {
+      "5km_leaderboard": mixedLb5,
+      "10km_leaderboard": mixedLb10,
+      auto_leaderboard: mixedLb10.entries.length > 0 ? mixedLb10 : mixedLb5,
+    },
+    women: {
+      "5km_leaderboard": womenLb5,
+      "10km_leaderboard": womenLb10,
+      auto_leaderboard: womenLb10.entries.length > 0 ? womenLb10 : womenLb5,
+    },
+  };
 }
 
 function getSimulatedSplits(): Split[] {
@@ -113,6 +163,7 @@ function getSimulatedSplits(): Split[] {
 let lastKnownSplits: Split[] = [];
 let lastSplitCount = 0;
 let lastState: RaceState | null = null;
+let lastLeaderboards: AllLeaderboards | null = null;
 let pushSuccessCount = 0;
 let pushErrorCount = 0;
 
@@ -129,7 +180,7 @@ async function pushToFlowics(state: RaceState): Promise<void> {
     const res = await fetch(FLOWICS_PUSH_URL, {
       method: "POST",
       headers,
-      body: JSON.stringify(state),
+      body: JSON.stringify({ ...state, ...lastLeaderboards }),
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) {
@@ -172,6 +223,12 @@ async function tick() {
   const state = buildRaceState(lastKnownSplits);
   lastState = state;
 
+  // Update leaderboards in simulate mode based on current km
+  if (SIMULATE_FILE) {
+    const simLb = getSimulatedLeaderboards(state.latest_km);
+    if (simLb) lastLeaderboards = simLb;
+  }
+
   log("tick", `${state.status} | clock: ${state.race_clock} | lead: ${state.estimated_position_km} km | pace: ${state.pace_min_per_km}/km | proj: ${state.projected_finish}`);
 
   await pushToFlowics(state);
@@ -179,10 +236,18 @@ async function tick() {
 
 // --- UL sync tick ---
 async function ulSyncTick() {
-  const result = await syncStartTime(RACE_START, log);
-  if (result.updated && result.newStart) {
-    RACE_START = result.newStart;
+  const [startResult, leaderboards] = await Promise.all([
+    syncStartTime(RACE_START, log),
+    fetchAllLeaderboards(UL_LEADERBOARD_SIZE, log),
+  ]);
+
+  if (startResult.updated && startResult.newStart) {
+    RACE_START = startResult.newStart;
     raceStartSource = "ultimate-live";
+  }
+
+  if (leaderboards) {
+    lastLeaderboards = leaderboards;
   }
 }
 
@@ -216,6 +281,7 @@ serve({
           last_fetch_error: helmutStats.lastFetchError,
         },
         state: lastState,
+        leaderboards: lastLeaderboards,
       });
     }
 

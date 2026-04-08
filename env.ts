@@ -49,6 +49,7 @@ export const UL_EVENT_ID = optional("UL_EVENT_ID");
 export const UL_USER = optional("UL_USER");
 export const UL_SECRET = optional("UL_SECRET");
 export const UL_SYNC_INTERVAL_MS = optionalInt("UL_SYNC_INTERVAL_MS", 10000, 1000);
+export const UL_LEADERBOARD_SIZE = optionalInt("UL_LEADERBOARD_SIZE", 9, 1);
 
 // --- Helmut ---
 export const HELMUT_URL = requiredUrl("HELMUT_URL");

@@ -1,0 +1,30 @@
+{
+  "5km": [
+    { "FirstName": "Jakob", "LastName": "Ingebrigtsen", "Gender": "M", "NationCode": "NOR", "Time": "0:13:33", "Rank": "1" },
+    { "FirstName": "Sondre", "LastName": "Moen", "Gender": "M", "NationCode": "NOR", "Time": "0:13:36", "Rank": "2" },
+    { "FirstName": "Filip", "LastName": "Ingebrigtsen", "Gender": "M", "NationCode": "NOR", "Time": "0:13:41", "Rank": "3" },
+    { "FirstName": "Zerei Kbrom", "LastName": "Mezngi", "Gender": "M", "NationCode": "NOR", "Time": "0:13:47", "Rank": "4" },
+    { "FirstName": "Karoline", "LastName": "Bjerkeli Grøvdal", "Gender": "W", "NationCode": "NOR", "Time": "0:15:10", "Rank": "5" },
+    { "FirstName": "Awet", "LastName": "Kibrab", "Gender": "M", "NationCode": "NOR", "Time": "0:13:52", "Rank": "6" },
+    { "FirstName": "Marius", "LastName": "Vedvik", "Gender": "M", "NationCode": "NOR", "Time": "0:13:58", "Rank": "7" },
+    { "FirstName": "Sarah", "LastName": "Lahti", "Gender": "W", "NationCode": "SWE", "Time": "0:15:13", "Rank": "8" },
+    { "FirstName": "Henrik", "LastName": "Ingebrigtsen", "Gender": "M", "NationCode": "NOR", "Time": "0:14:20", "Rank": "9" },
+    { "FirstName": "Hanne", "LastName": "Mjøen Maridal", "Gender": "W", "NationCode": "NOR", "Time": "0:15:18", "Rank": "10" },
+    { "FirstName": "Bjørnar", "LastName": "Sandnes Lillefosse", "Gender": "M", "NationCode": "NOR", "Time": "0:14:37", "Rank": "11" },
+    { "FirstName": "Magnus", "LastName": "Tuv Myhre", "Gender": "M", "NationCode": "NOR", "Time": "0:14:49", "Rank": "12" }
+  ],
+  "10km": [
+    { "FirstName": "Jakob", "LastName": "Ingebrigtsen", "Gender": "M", "NationCode": "NOR", "Time": "0:27:05", "Rank": "1" },
+    { "FirstName": "Sondre", "LastName": "Moen", "Gender": "M", "NationCode": "NOR", "Time": "0:27:12", "Rank": "2" },
+    { "FirstName": "Filip", "LastName": "Ingebrigtsen", "Gender": "M", "NationCode": "NOR", "Time": "0:27:19", "Rank": "3" },
+    { "FirstName": "Zerei Kbrom", "LastName": "Mezngi", "Gender": "M", "NationCode": "NOR", "Time": "0:27:31", "Rank": "4" },
+    { "FirstName": "Awet", "LastName": "Kibrab", "Gender": "M", "NationCode": "NOR", "Time": "0:27:45", "Rank": "5" },
+    { "FirstName": "Marius", "LastName": "Vedvik", "Gender": "M", "NationCode": "NOR", "Time": "0:27:58", "Rank": "6" },
+    { "FirstName": "Henrik", "LastName": "Ingebrigtsen", "Gender": "M", "NationCode": "NOR", "Time": "0:28:40", "Rank": "7" },
+    { "FirstName": "Karoline", "LastName": "Bjerkeli Grøvdal", "Gender": "W", "NationCode": "NOR", "Time": "0:30:22", "Rank": "8" },
+    { "FirstName": "Bjørnar", "LastName": "Sandnes Lillefosse", "Gender": "M", "NationCode": "NOR", "Time": "0:29:37", "Rank": "9" },
+    { "FirstName": "Magnus", "LastName": "Tuv Myhre", "Gender": "M", "NationCode": "NOR", "Time": "0:29:49", "Rank": "10" },
+    { "FirstName": "Sarah", "LastName": "Lahti", "Gender": "W", "NationCode": "SWE", "Time": "0:30:35", "Rank": "11" },
+    { "FirstName": "Hanne", "LastName": "Mjøen Maridal", "Gender": "W", "NationCode": "NOR", "Time": "0:30:48", "Rank": "12" }
+  ]
+}
