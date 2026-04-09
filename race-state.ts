@@ -6,7 +6,8 @@ export interface RecordPace {
   record_time: string;
   projected_time: string;
   difference: string;
-  ahead: boolean;
+  aheadOrBehindText: "Ahead By" | "Behind By";
+  aheadOrBehindColor: string;
 }
 
 export interface RaceState {
@@ -105,7 +106,8 @@ export function computeRaceState({
     record_time: recordTime,
     projected_time: projectedFinish,
     difference: projectedSecs > 0 ? secondsToTime(diffSecs) : "0:00",
-    ahead,
+    aheadOrBehindText: ahead ? "Ahead By" : "Behind By",
+    aheadOrBehindColor: ahead ? "#44E843" : "#F47D7D",
   };
 
   return {

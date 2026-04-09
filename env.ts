@@ -43,6 +43,8 @@ function optionalInt(key: string, fallback: number, min?: number): number {
 // --- Flowics ---
 export const FLOWICS_PUSH_URL = requiredUrl("FLOWICS_PUSH_URL");
 export const FLOWICS_TOKEN = optional("FLOWICS_TOKEN");
+export const FLOWICS_RUNNER_PUSH_URL = optionalUrl("FLOWICS_RUNNER_PUSH_URL");
+export const FLOWICS_RUNNER_TOKEN = optional("FLOWICS_RUNNER_TOKEN");
 
 // --- Ultimate Live ---
 export const UL_EVENT_ID = optional("UL_EVENT_ID");

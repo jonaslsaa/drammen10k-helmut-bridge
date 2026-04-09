@@ -91,7 +91,7 @@ export async function syncStartTime(
 // @ts-ignore no types available
 import { convertIocCode } from "convert-country-codes";
 
-function iocToFlagUrl(iocCode: string): string | null {
+export function iocToFlagUrl(iocCode: string): string | null {
   const result = convertIocCode(iocCode.toUpperCase());
   if (!result?.iso2) return null;
   return `https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/${result.iso2.toLowerCase()}.svg`;

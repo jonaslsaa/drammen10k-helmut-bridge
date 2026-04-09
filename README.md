@@ -31,61 +31,112 @@ Then install dependencies:
 bun install
 ```
 
+## Configuration
+
+All config lives in the `.env` file. Copy the example and fill in your values:
+
+```sh
+cp .env.example .env
+```
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `FLOWICS_PUSH_URL` | Yes | — | Flowics HTTP Push endpoint URL |
+| `FLOWICS_TOKEN` | No | — | Bearer token for Flowics (if needed) |
+| `HELMUT_URL` | Yes | — | Helmut's WordPress splits page URL |
+| `RACE_START` | Yes | — | Race start in Oslo local time (e.g. `2026-04-11T14:45`) |
+| `RECORD_LABEL` | Yes | — | Label for the record comparison (e.g. `European Record`) |
+| `RECORD_TIME` | Yes | — | Record time to compare against (e.g. `26:33`) |
+| `UL_EVENT_ID` | No | — | Ultimate Live event ID (enables UL sync) |
+| `UL_USER` | No | — | Ultimate Live API username |
+| `UL_SECRET` | No | — | Ultimate Live API secret |
+| `UL_SYNC_INTERVAL_MS` | No | `10000` | UL poll interval in ms |
+| `UL_LEADERBOARD_SIZE` | No | `9` | Max entries per leaderboard |
+| `TOTAL_KM` | No | `10` | Race distance in km |
+| `EVENT_NAME` | No | `Drammen 10K` | Event name in output JSON |
+| `CATEGORY` | No | `Male Leaders` | Category name in output JSON |
+| `POLL_INTERVAL_MS` | No | `5000` | Helmut poll / Flowics push interval in ms |
+| `STATUS_PORT` | No | `3000` | Local status server port |
+
+## CLI options
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--dry-run` | `false` | Run without pushing to Flowics |
+| `--simulate <file>` | — | Simulate a race from a test data file |
+| `--simulate-interval <s>` | `10` | Seconds between each simulated split |
+| `-h, --help` | — | Show help |
+
 ## Usage
 
 ### Dry run (test without pushing to Flowics)
 
 ```sh
-bun run index.ts \
-  --helmut-url "http://splits.hwrun.de/?p=17793" \
-  --race-start "2026-04-11T14:45" \
-  --dry-run
+bun run index.ts --dry-run
 ```
 
-### Live (pushing to Flowics)
+### Simulate mode (test with fake data)
 
 ```sh
-bun run index.ts \
-  --helmut-url "http://splits.hwrun.de/?p=17793" \
-  --race-start "2026-04-11T14:45" \
-  --flowics-url "https://your-flowics-push-url-here"
+bun run index.ts --simulate testdata.txt --dry-run
 ```
 
-### Two categories (male + female leaders)
+## Race day — Saturday April 11, 2026
 
-Run two instances with different URLs and ports:
+Step-by-step checklist for running this in production.
+
+### Before the race
+
+1. **Open a terminal** on the laptop that will run during the broadcast.
+
+2. **Navigate to the project folder:**
+   ```sh
+   cd /path/to/Helmut
+   ```
+
+3. **Check your `.env` file has the correct values:**
+   ```sh
+   cat .env
+   ```
+   Verify:
+   - `FLOWICS_PUSH_URL` — the URL from Flowics Data Connector input
+   - `HELMUT_URL` — Helmut's WordPress page (should be `http://splits.hwrun.de/?p=17793`)
+   - `RACE_START` — confirmed start time in Oslo time (e.g. `2026-04-11T14:45`)
+   - `RECORD_LABEL` / `RECORD_TIME` — the record you want to compare against
+   - `UL_EVENT_ID`, `UL_USER`, `UL_SECRET` — Ultimate Live credentials (for leaderboards + start time sync)
+
+4. **Do a dry run to make sure everything connects:**
+   ```sh
+   bun run index.ts --dry-run
+   ```
+   - Check the console output — you should see `[tick]` lines every 5 seconds
+   - Open http://localhost:3000/status — you should see the JSON payload
+   - If UL is configured, you should see `[ul]` log lines with leaderboard counts
+
+5. **Check your internet connection.** All traffic is outbound — no public IP needed. But you do need a stable connection to reach both `splits.hwrun.de` and Flowics.
+
+### Start the bridge (go live)
 
 ```sh
-# Terminal 1 — Male leaders
-bun run index.ts \
-  --helmut-url "http://splits.hwrun.de/?p=17793" \
-  --race-start "2026-04-11T14:45" \
-  --flowics-url "https://flowics-push-url-for-male" \
-  --category "Male Leaders" \
-  --port 3000
-
-# Terminal 2 — Female leaders
-bun run index.ts \
-  --helmut-url "http://splits.hwrun.de/?p=XXXXX" \
-  --race-start "2026-04-11T14:45" \
-  --flowics-url "https://flowics-push-url-for-female" \
-  --category "Female Leaders" \
-  --port 3001
+bun run index.ts
 ```
 
-## CLI options
+That's it. The script will:
+- Poll Helmut's page every 5 seconds
+- Compute race state (clock, position, pace, projected finish, record comparison)
+- Sync start time + leaderboards from Ultimate Live every 10 seconds
+- Push everything to Flowics every 5 seconds
 
-| Flag | Required | Default | Description |
-|------|----------|---------|-------------|
-| `--helmut-url` | Yes | — | Helmut's WordPress splits page URL |
-| `--race-start` | Yes | — | Race start in Oslo time (e.g. `2026-04-11T14:45`) |
-| `--flowics-url` | Yes* | — | Flowics HTTP Push endpoint URL (*not required with `--dry-run`) |
-| `--poll-interval` | No | `5000` | Poll/push interval in milliseconds |
-| `--total-km` | No | `10` | Total race distance in km |
-| `--event` | No | `Drammen 10K` | Event name in output JSON |
-| `--category` | No | `Male Leaders` | Category name in output JSON |
-| `--port` | No | `3000` | Local status server port |
-| `--dry-run` | No | `false` | Run without pushing to Flowics |
+### During the race
+
+- **Watch the console.** You'll see log lines for every tick and every new split.
+- **Monitor via browser:** Open http://localhost:3000/status to see the full JSON payload and error counts at any time.
+- **If the start is delayed:** If UL is configured, the script auto-syncs the actual start time from Ultimate Live. No action needed.
+- **If something looks wrong:** Check the `stats` in `/status` — `fetch_errors` or `push_errors` will tell you where the problem is.
+
+### If you need to restart
+
+Press `Ctrl+C` to stop, then run `bun run index.ts` again. The script has no persistent state — it fetches current data from Helmut's page on startup and picks up immediately. You can also edit `.env` between restarts (e.g. to change `RACE_START`).
 
 ## Monitoring during the race
 
@@ -169,29 +220,25 @@ The JSON you push must match the schema configured in Flowics. If you ever chang
 
 ## Race start time
 
-The `--race-start` flag takes **Oslo local time** — no timezone conversion needed. The script handles CET/CEST automatically.
+`RACE_START` in `.env` takes **Oslo local time** — no timezone conversion needed. The script handles CET/CEST automatically.
 
-Example: `--race-start "2026-04-11T14:45"` for a 14:45 start in Drammen.
+Example: `RACE_START=2026-04-11T14:45` for a 14:45 start in Drammen.
 
-> **TODO:** The race start can be delayed on the day (weather, etc.). Currently you have to restart the script with a new `--race-start` value. In the future, we should pull the actual start time from the Ultimate Live API so it auto-adjusts. Waiting on API access from Ultimate Live.
-
-## Restarting
-
-It's safe to restart the script at any time (even mid-race). It has no persistent state — it fetches the current data from Helmut's page on startup and picks up where it left off. You can also change `--race-start` or any other flag between restarts.
+If Ultimate Live is configured (`UL_EVENT_ID`, `UL_USER`, `UL_SECRET`), the script automatically syncs the actual start time from the timing system. This handles race delays — no need to restart or edit `.env`.
 
 ## Troubleshooting
 
 ### The script won't start
 
-**"Validation errors"** — You're missing a required flag or a value is wrong. Read the error messages, they tell you exactly what's missing. Example:
+**"Environment validation errors"** — You're missing a required variable in `.env`. Read the error messages, they tell you exactly what's missing. Example:
 
 ```
-Validation errors:
-  - --helmut-url is required
-  - --flowics-url is required (or use --dry-run)
+Environment validation errors:
+  - FLOWICS_PUSH_URL is required
+  - HELMUT_URL is required
 ```
 
-Fix: add the missing flags. Use `--dry-run` if you just want to test without Flowics.
+Fix: check your `.env` file and add the missing values. Use `--dry-run` if you just want to test without Flowics.
 
 **"command not found: bun"** — Bun is not installed. Run:
 ```sh
@@ -204,16 +251,16 @@ Then close and reopen your terminal.
 1. Open http://localhost:3000/status in your browser (or `curl http://localhost:3000/status` in a new terminal)
 2. Check the `stats` section:
    - `fetch_errors` is high? Helmut's site might be down. Check if you can open the `--helmut-url` in your browser.
-   - `push_errors` is high? The Flowics URL might be wrong. Double-check the `--flowics-url` value.
+   - `push_errors` is high? The Flowics URL might be wrong. Double-check `FLOWICS_PUSH_URL` in `.env`.
    - `last_fetch_error` tells you exactly what went wrong on the last failed fetch.
 3. Check the `state` section:
-   - `status` is `"waiting"`? The race hasn't started yet (or `--race-start` time is wrong).
+   - `status` is `"waiting"`? The race hasn't started yet (or `RACE_START` in `.env` is wrong).
    - `splits` is empty `[]`? Helmut hasn't entered any data yet, or the page format changed.
    - `splits` has data but `estimated_position_km` is `0`? The race start time is in the future.
 
 ### The estimated position seems wrong
 
-The position is calculated from the race start time. If `--race-start` is even 1 minute off, the position will drift by ~0.4 km. Double-check the exact start time with the race organizer.
+The position is calculated from the race start time. If `RACE_START` is even 1 minute off, the position will drift by ~0.4 km. If UL is configured, the script auto-syncs the actual start time — check the `/status` endpoint to see `race_start_source` (should be `"ultimate-live"` once synced).
 
 ### The split data looks like it's from a test/old race
 
@@ -231,7 +278,7 @@ Just press `Ctrl+C` in the terminal to stop it, then run the same command again.
 
 ### Nothing seems to work and I'm stuck
 
-1. Try a dry run first to isolate the problem: `bun run index.ts --helmut-url "http://splits.hwrun.de/?p=17793" --race-start "2026-04-11T14:45" --dry-run`
+1. Try a dry run first to isolate the problem: `bun run index.ts --dry-run`
 2. If the dry run works (you see splits in the logs), the problem is on the Flowics side.
 3. If the dry run also shows errors, the problem is with Helmut's page or your internet.
 

@@ -14,7 +14,8 @@
     "record_time": "26:33",
     "projected_time": "27:05",
     "difference": "0:32",
-    "ahead": false
+    "aheadOrBehindText": "Behind By",
+    "aheadOrBehindColor": "#F47D7D"
   },
   "splits": [
     { "km": 1, "split": "2:44", "last_km": "2:44", "projected_finish": "27:19" },

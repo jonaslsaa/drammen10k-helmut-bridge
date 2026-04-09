@@ -1,0 +1,23 @@
+{
+  "bib": "1",
+  "name": "Jakob Ingebrigtsen",
+  "first_name": "Jakob",
+  "last_name": "Ingebrigtsen",
+  "country": "NOR",
+  "country_flag_url": "https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3/no.svg",
+  "gender": "M",
+  "category": "M20-24",
+  "club": "Sandnes IL",
+  "city": "SANDNES",
+  "birth_year": "2000",
+  "finish_time": "27:05",
+  "finish_time_net": "27:05",
+  "rank_overall": "1",
+  "rank_gender": "1",
+  "rank_category": "1",
+  "status": "",
+  "splits": [
+    { "title": "5 km", "time": "13:33", "rank": "1" },
+    { "title": "10 km", "time": "27:05", "rank": "1" }
+  ]
+}
