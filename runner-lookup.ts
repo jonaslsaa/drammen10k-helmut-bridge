@@ -352,9 +352,21 @@ serve({
       if (!entryId) return Response.json({ error: "Missing entry ID" }, { status: 400 });
 
       try {
-        const records = await ulFetch("resultsinfo", { search_entryid: entryId });
-        const r = records[0] as any;
+        // Fetch both resultsinfo (detail + splits) and search (ranks) in parallel
+        const [infoRecords, searchRecords] = await Promise.all([
+          ulFetch("resultsinfo", { search_entryid: entryId }),
+          ulFetch("search", { search_entryid: entryId }),
+        ]);
+        const r = infoRecords[0] as any;
         if (!r) return Response.json({ error: "Runner not found" }, { status: 404 });
+
+        // Merge rank fields from search (resultsinfo often lacks them)
+        const s = searchRecords[0];
+        if (s) {
+          r.TimeRaceRankDistance = r.TimeRaceRankDistance || s.TimeRaceRankDistance;
+          r.TimeRaceRankDistanceSex = r.TimeRaceRankDistanceSex || s.TimeRaceRankDistanceSex;
+          r.TimeRaceRankDistanceCategory = r.TimeRaceRankDistanceCategory || s.TimeRaceRankDistanceCategory;
+        }
 
         // Times is nested in the JSON but ulFetch types it as Record<string, string>
         let times: Record<string, string>[] = [];
