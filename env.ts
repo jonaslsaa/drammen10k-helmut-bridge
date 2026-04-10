@@ -50,6 +50,7 @@ export const FLOWICS_RUNNER_TOKEN = optional("FLOWICS_RUNNER_TOKEN");
 export const UL_EVENT_ID = optional("UL_EVENT_ID");
 export const UL_USER = optional("UL_USER");
 export const UL_SECRET = optional("UL_SECRET");
+export const UL_DISTANCE_ID = optional("UL_DISTANCE_ID", "1");
 export const UL_SYNC_INTERVAL_MS = optionalInt("UL_SYNC_INTERVAL_MS", 5000, 1000);
 export const UL_LEADERBOARD_SIZE = optionalInt("UL_LEADERBOARD_SIZE", 9, 1);
 

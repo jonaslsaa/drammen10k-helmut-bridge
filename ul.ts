@@ -1,4 +1,4 @@
-import { UL_EVENT_ID, UL_USER, UL_SECRET, RACE_START_OSLO } from "./env";
+import { UL_EVENT_ID, UL_USER, UL_SECRET, UL_DISTANCE_ID, RACE_START_OSLO } from "./env";
 import { osloToUtc, timeToSeconds, secondsToTime } from "./time";
 
 // --- API helpers ---
@@ -207,20 +207,25 @@ export async function fetchAllLeaderboards(
 ): Promise<AllLeaderboards | null> {
   if (!UL_ENABLED) return null;
 
+  const dist = UL_DISTANCE_ID;
+  const records = String(maxEntries);
+  const fetch5km = (extra: Record<string, string> = {}) =>
+    ulFetch("timingpointstandings", { time: "Time1", distance: dist, records, ...extra }).catch(() => [] as UlRecord[]);
+  const fetchFinish = (extra: Record<string, string> = {}) =>
+    ulFetch("timingpointstandings", { time: "Finish", distance: dist, records, ...extra }).catch(() => [] as UlRecord[]);
+
   try {
-    // Fetch all results at both timing points in parallel (no sex filter)
-    const [all5km, all10km] = await Promise.all([
-      ulFetch("timingpointstandings", { time: "Time1", records: "100" }).catch(() => [] as UlRecord[]),
-      ulFetch("timingpointstandings", { time: "Finish", records: "100" }).catch(() => [] as UlRecord[]),
+    // 6 filtered API calls: mixed/men/women x 5km/finish
+    const [mixed5km, mixed10km, men5km, men10km, women5km, women10km] = await Promise.all([
+      fetch5km(),
+      fetchFinish(),
+      fetch5km({ sex: "M" }),
+      fetchFinish({ sex: "M" }),
+      fetch5km({ sex: "W" }),
+      fetchFinish({ sex: "W" }),
     ]);
 
-    // Split by gender
-    const men5km = all5km.filter((r) => r.Gender === "M");
-    const men10km = all10km.filter((r) => r.Gender === "M");
-    const women5km = all5km.filter((r) => r.Gender === "W");
-    const women10km = all10km.filter((r) => r.Gender === "W");
-
-    const mixed = buildLeaderboardSet(all5km, all10km, "", maxEntries);
+    const mixed = buildLeaderboardSet(mixed5km, mixed10km, "", maxEntries);
     const men = buildLeaderboardSet(men5km, men10km, "Men", maxEntries);
     const women = buildLeaderboardSet(women5km, women10km, "Women", maxEntries);
 

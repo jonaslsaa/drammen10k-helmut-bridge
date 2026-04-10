@@ -86,6 +86,15 @@ describe("fetchAllLeaderboards", () => {
   test("splits mixed and women leaderboards from timing point results", async () => {
     const originalFetch = globalThis.fetch;
 
+    const allTime1 = [
+      { FirstName: "Male", LastName: "Leader", NationCode: "NOR", Gender: "M", Time: "00:13:33" },
+      { FirstName: "Female", LastName: "Chaser", NationCode: "NOR", Gender: "W", Time: "00:15:13" },
+      { FirstName: "Female", LastName: "Leader", NationCode: "SWE", Gender: "W", Time: "00:15:10" },
+    ];
+    const allFinish = [
+      { FirstName: "Male", LastName: "Winner", NationCode: "NOR", Gender: "M", Time: "00:26:53" },
+    ];
+
     // @ts-ignore mock fetch for testing
     globalThis.fetch = mock(async (input: string | URL | Request): Promise<Response> => {
       const url = typeof input === "string"
@@ -94,29 +103,17 @@ describe("fetchAllLeaderboards", () => {
           ? input.toString()
           : input.url;
 
-      if (url.includes("time=Time1")) {
-        return new Response(
-          JSON.stringify({
-            Records: {
-              Record: [
-                { FirstName: "Male", LastName: "Leader", NationCode: "NOR", Gender: "M", Time: "00:13:33" },
-                { FirstName: "Female", LastName: "Chaser", NationCode: "NOR", Gender: "W", Time: "00:15:13" },
-                { FirstName: "Female", LastName: "Leader", NationCode: "SWE", Gender: "W", Time: "00:15:10" },
-              ],
-            },
-          })
-        );
-      }
+      const isTime1 = url.includes("time=Time1");
+      const isMen = url.includes("sex=M");
+      const isWomen = url.includes("sex=W");
+      const pool = isTime1 ? allTime1 : allFinish;
+      const filtered = isMen ? pool.filter(r => r.Gender === "M")
+        : isWomen ? pool.filter(r => r.Gender === "W")
+        : pool;
 
-      return new Response(
-        JSON.stringify({
-          Records: {
-            Record: [
-              { FirstName: "Male", LastName: "Winner", NationCode: "NOR", Gender: "M", Time: "00:26:53" },
-            ],
-          },
-        })
-      );
+      return new Response(JSON.stringify({
+        Records: { Record: filtered.length === 1 ? filtered[0] : filtered },
+      }));
     }) as typeof fetch;
 
     try {

@@ -1,6 +1,6 @@
 import { serve } from "bun";
 import { FLOWICS_RUNNER_PUSH_URL, FLOWICS_RUNNER_TOKEN, FLOWICS_TOKEN, STATUS_PORT } from "./env";
-import { ulFetch, iocToFlagUrl, UL_ENABLED } from "./ul";
+import { ulFetch, iocToFlagUrl, UL_ENABLED, type UlRecord } from "./ul";
 import { log } from "./time";
 
 const PORT = STATUS_PORT + 1; // runner lookup runs on the next port
