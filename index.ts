@@ -12,6 +12,7 @@ import { timeToSeconds, osloToUtc, log } from "./time";
 import { type Split, fetchHelmutData, parsePlainTextSplits, getHelmutStats } from "./helmut";
 import { UL_ENABLED, syncStartTime, fetchAllLeaderboards, buildLeaderboardSet, type AllLeaderboards, type UlRecord } from "./ul";
 import { computeRaceState, type RaceState } from "./race-state";
+import { applyUlFinishFallback } from "./finish-fallback";
 
 // --- CLI args (runtime-only flags) ---
 const { values: args } = parseArgs({
@@ -150,6 +151,7 @@ let lastState: RaceState | null = null;
 let lastLeaderboards: AllLeaderboards | null = null;
 let pushSuccessCount = 0;
 let pushErrorCount = 0;
+let lastLoggedUlFinish: string | null = null;
 
 // --- Push to Flowics ---
 async function pushToFlowics(state: RaceState): Promise<void> {
@@ -204,7 +206,23 @@ async function tick() {
     log("fetch", `Using last known data (${lastKnownSplits.length} splits)`);
   }
 
-  const state = buildRaceState(lastKnownSplits);
+  const finishFallback = applyUlFinishFallback({
+    splits: lastKnownSplits,
+    leaderboards: lastLeaderboards,
+    totalKm: TOTAL_KM,
+    category: CATEGORY,
+  });
+  const splitsForState = finishFallback.splits;
+  if (finishFallback.usedUlFinish && finishFallback.finishTime) {
+    if (finishFallback.finishTime !== lastLoggedUlFinish) {
+      log("ul-finish", `Using UL finish time: ${finishFallback.finishTime} (from leaderboard)`);
+      lastLoggedUlFinish = finishFallback.finishTime;
+    }
+  } else {
+    lastLoggedUlFinish = null;
+  }
+
+  const state = buildRaceState(splitsForState);
   lastState = state;
 
   // Update leaderboards in simulate mode based on current km
