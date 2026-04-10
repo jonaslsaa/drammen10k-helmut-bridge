@@ -60,7 +60,7 @@ export async function syncStartTime(
   if (!UL_ENABLED) return { updated: false };
 
   try {
-    const records = await ulFetch("startgroups");
+    const records = await ulFetch("startgroups", { id: UL_DISTANCE_ID });
 
     for (const sg of records) {
       const actual = sg.ActualStartTime;
