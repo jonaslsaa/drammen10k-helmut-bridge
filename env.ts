@@ -50,7 +50,7 @@ export const FLOWICS_RUNNER_TOKEN = optional("FLOWICS_RUNNER_TOKEN");
 export const UL_EVENT_ID = optional("UL_EVENT_ID");
 export const UL_USER = optional("UL_USER");
 export const UL_SECRET = optional("UL_SECRET");
-export const UL_SYNC_INTERVAL_MS = optionalInt("UL_SYNC_INTERVAL_MS", 10000, 1000);
+export const UL_SYNC_INTERVAL_MS = optionalInt("UL_SYNC_INTERVAL_MS", 5000, 1000);
 export const UL_LEADERBOARD_SIZE = optionalInt("UL_LEADERBOARD_SIZE", 9, 1);
 
 // --- Helmut ---
@@ -67,7 +67,7 @@ export const RECORD_LABEL = required("RECORD_LABEL");
 export const RECORD_TIME = required("RECORD_TIME");
 
 // --- Server ---
-export const POLL_INTERVAL_MS = optionalInt("POLL_INTERVAL_MS", 5000, 1000);
+export const POLL_INTERVAL_MS = optionalInt("POLL_INTERVAL_MS", 3000, 1000);
 export const STATUS_PORT = optionalInt("STATUS_PORT", 3000, 1);
 
 // --- Validate UL: if any UL var is set, all three must be ---
