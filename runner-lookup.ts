@@ -320,8 +320,9 @@ serve({
       if (q.length < 2) return Response.json([]);
 
       try {
+        const isBib = /^\d+$/.test(q);
         const records = await ulFetch("search", {
-          search_name: `%${q}%`,
+          ...(isBib ? { search_bib: q } : { search_name: `%${q}%` }),
           records: "20",
         });
 
