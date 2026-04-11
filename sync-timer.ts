@@ -9,7 +9,7 @@ import { osloToUtc, log } from "./time";
 const { values: args } = parseArgs({
   args: process.argv.slice(2),
   options: {
-    "fake-start": { type: "string" },
+    "fake-start-time": { type: "string" },
     help: { type: "boolean", short: "h", default: false },
   },
   strict: true,
@@ -23,12 +23,12 @@ Syncs the Flowics broadcast timer to the actual race start time from Ultimate Li
 Press play on the timer AT or BEFORE the gun, then run this script to correct the drift.
 
 Options:
-  --fake-start <seconds>  Fake the UL start time as <seconds> ago (for testing)
-  -h, --help              Show this help
+  --fake-start-time <HH:MM:SS>  Fake the UL start time in Oslo time (for testing)
+  -h, --help                    Show this help
 
 Examples:
-  bun run sync-timer.ts                  # Sync using real UL data
-  bun run sync-timer.ts --fake-start 5   # Pretend the gun fired 5s ago
+  bun run sync-timer.ts                          # Sync using real UL data
+  bun run sync-timer.ts --fake-start-time 14:45:00  # Pretend gun fired at 14:45:00 Oslo
 `);
   process.exit(0);
 }
@@ -39,8 +39,8 @@ if (!FLOWICS_GRAPHICS_TOKEN) {
   console.error("FLOWICS_GRAPHICS_TOKEN is required in .env");
   process.exit(1);
 }
-if (!UL_ENABLED && !args["fake-start"]) {
-  console.error("Ultimate Live is not configured. Set UL_EVENT_ID, UL_USER, UL_SECRET in .env (or use --fake-start)");
+if (!UL_ENABLED && !args["fake-start-time"]) {
+  console.error("Ultimate Live is not configured. Set UL_EVENT_ID, UL_USER, UL_SECRET in .env (or use --fake-start-time)");
   process.exit(1);
 }
 
@@ -93,6 +93,15 @@ async function getActualStartTime(): Promise<Date | null> {
   return null;
 }
 
+// --- Parse HH:MM:SS to milliseconds ---
+
+function parseTimeToMs(time: string): number {
+  const parts = time.split(":").map(Number);
+  if (parts.length === 3) return (parts[0] * 3600 + parts[1] * 60 + parts[2]) * 1000;
+  if (parts.length === 2) return (parts[0] * 60 + parts[1]) * 1000;
+  return parts[0] * 1000;
+}
+
 // --- Prompt user ---
 
 function ask(question: string): string {
@@ -108,17 +117,23 @@ function ask(question: string): string {
 log("sync", "=== Flowics Timer Sync ===");
 log("sync", "");
 
-// 1. Get actual start time (from UL or --fake-start)
+// 1. Get actual start time (from UL or --fake-start-time)
 let ulStart: Date | null = null;
-if (args["fake-start"]) {
-  const secsAgo = Number(args["fake-start"]);
-  ulStart = new Date(Date.now() - secsAgo * 1000);
-  log("sync", `Using fake start time: ${secsAgo}s ago`);
+if (args["fake-start-time"]) {
+  // Use today's date in Oslo timezone
+  const now = new Date();
+  const osloDate = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Oslo" }).format(now);
+  ulStart = osloToUtc(`${osloDate}T${args["fake-start-time"]}`);
+  if (isNaN(ulStart.getTime())) {
+    log("sync", `Invalid time format: ${args["fake-start-time"]} (use HH:MM:SS)`);
+    process.exit(1);
+  }
+  log("sync", `Using fake start time: ${args["fake-start-time"]} Oslo today`);
 } else {
   ulStart = await getActualStartTime();
 }
 if (!ulStart) {
-  log("sync", "Could not get actual start time from UL. Is the race started? (Use --fake-start to test)");
+  log("sync", "Could not get actual start time from UL. Is the race started? (Use --fake-start-time to test)");
   process.exit(1);
 }
 const ulStartMs = ulStart.getTime();
@@ -126,12 +141,15 @@ log("sync", `UL actual start: ${ulStart.toISOString()}`);
 
 // 2. Resolve Flowics timer
 const resolved = await resolveTimer();
-const flowicsStartMs = resolved.timeReference;
-log("sync", `Flowics timer ref: ${new Date(flowicsStartMs).toISOString()}`);
-log("sync", `Flowics current:   ${resolved.currentCalculated}`);
+const resolveTimestamp = resolved.timeReferenceCalculated; // server time at resolve
+const displayedMs = parseTimeToMs(resolved.currentCalculated);
+const actualElapsedMs = resolveTimestamp - ulStartMs;
 
-// 3. Compute drift
-const driftMs = ulStartMs - flowicsStartMs;
+log("sync", `Flowics timer shows: ${resolved.currentCalculated} (${displayedMs}ms)`);
+log("sync", `Actual elapsed:      ${(actualElapsedMs / 1000).toFixed(1)}s`);
+
+// 3. Compute drift: how far ahead the timer is
+const driftMs = displayedMs - actualElapsedMs;
 const driftSec = (driftMs / 1000).toFixed(1);
 
 log("sync", "");
