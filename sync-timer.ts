@@ -140,12 +140,16 @@ const ulStartMs = ulStart.getTime();
 log("sync", `UL actual start: ${ulStart.toISOString()}`);
 
 // 2. Resolve Flowics timer
+// NOTE: currentCalculated from the API is unreliable — compute displayed time manually
 const resolved = await resolveTimer();
-const resolveTimestamp = resolved.timeReferenceCalculated; // server time at resolve
-const displayedMs = parseTimeToMs(resolved.currentCalculated);
+const resolveTimestamp = resolved.timeReferenceCalculated;
+const currentMs = parseTimeToMs(resolved.current);
+const elapsedSincePlay = resolveTimestamp - resolved.timeReference;
+const displayedMs = currentMs + elapsedSincePlay;
 const actualElapsedMs = resolveTimestamp - ulStartMs;
 
-log("sync", `Flowics timer shows: ${resolved.currentCalculated} (${displayedMs}ms)`);
+const displayedSec = (displayedMs / 1000).toFixed(1);
+log("sync", `Flowics timer shows: ~${displayedSec}s (current=${resolved.current} + ${(elapsedSincePlay / 1000).toFixed(1)}s since play)`);
 log("sync", `Actual elapsed:      ${(actualElapsedMs / 1000).toFixed(1)}s`);
 
 // 3. Compute drift: how far ahead the timer is
@@ -182,4 +186,7 @@ await playTimer();
 // 5. Verify
 log("sync", "");
 const after = await resolveTimer();
-log("sync", `Done! Timer now shows: ${after.currentCalculated}`);
+const afterCurrentMs = parseTimeToMs(after.current);
+const afterElapsed = after.timeReferenceCalculated - after.timeReference;
+const afterDisplayed = ((afterCurrentMs + afterElapsed) / 1000).toFixed(1);
+log("sync", `Done! Timer now shows: ~${afterDisplayed}s`);
