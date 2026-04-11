@@ -45,6 +45,8 @@ export const FLOWICS_PUSH_URL = requiredUrl("FLOWICS_PUSH_URL");
 export const FLOWICS_TOKEN = optional("FLOWICS_TOKEN");
 export const FLOWICS_RUNNER_PUSH_URL = optionalUrl("FLOWICS_RUNNER_PUSH_URL");
 export const FLOWICS_RUNNER_TOKEN = optional("FLOWICS_RUNNER_TOKEN");
+export const FLOWICS_GRAPHICS_TOKEN = optional("FLOWICS_GRAPHICS_TOKEN");
+export const FLOWICS_TIMER_PROVIDER_ID = optional("FLOWICS_TIMER_PROVIDER_ID");
 
 // --- Ultimate Live ---
 export const UL_EVENT_ID = optional("UL_EVENT_ID");
