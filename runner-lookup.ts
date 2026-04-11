@@ -43,6 +43,15 @@ interface RunnerData {
   splits: { title: string; time: string; rank: string }[];
 }
 
+function nonZero(v: string | undefined): string {
+  return v && v !== "0" ? v : "";
+}
+
+function nonZeroTime(raw: string | undefined, fmt: (s: string) => string): string {
+  if (!raw || /^[0:]+$/.test(raw)) return "";
+  return fmt(raw);
+}
+
 function buildRunnerData(r: UlRecord, times?: UlRecord[]): RunnerData {
   const country = r.NationCode || r.Nation || "";
   return {
@@ -57,16 +66,16 @@ function buildRunnerData(r: UlRecord, times?: UlRecord[]): RunnerData {
     club: r.Club || "",
     city: r.City || "",
     birth_year: r.BirthYear || "",
-    finish_time: r.TimeFinish ? formatFinishTime(r.TimeFinish) : "",
-    finish_time_net: r.TimeFinishNet ? formatFinishTime(r.TimeFinishNet) : "",
-    rank_overall: r.RankAll || r.TimeRaceRankDistance || "",
-    rank_gender: r.RankSex || r.TimeRaceRankDistanceSex || "",
-    rank_category: r.RankCat || r.TimeRaceRankDistanceCategory || "",
+    finish_time: nonZeroTime(r.TimeFinish, formatFinishTime),
+    finish_time_net: nonZeroTime(r.TimeFinishNet, formatFinishTime),
+    rank_overall: nonZero(r.RankAll || r.TimeRaceRankDistance),
+    rank_gender: nonZero(r.RankSex || r.TimeRaceRankDistanceSex),
+    rank_category: nonZero(r.RankCat || r.TimeRaceRankDistanceCategory),
     status: r.Status || "",
     splits: (times || []).map((t) => ({
       title: t.DistanceTitle || "",
-      time: t.TimeRace ? formatTime(t.TimeRace) : "",
-      rank: t.TimeRaceRankDistance || "",
+      time: nonZeroTime(t.TimeRace, formatTime),
+      rank: nonZero(t.TimeRaceRankDistance),
     })),
   };
 }
